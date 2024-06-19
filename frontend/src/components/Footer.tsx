@@ -21,7 +21,7 @@ export const Footer = () => {
             </Link>
 
             <Link
-              href="https://testnet.xendrwachain.com/"
+              href="https://testnet.assetchain.org/"
               passHref
               className="btn btn-primary btn-sm font-normal gap-1 flex text-white"
             >

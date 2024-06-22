@@ -1,6 +1,6 @@
 "use client";
 import deployedContracts from "@/contracts/deployedContracts";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   createPublicClient,
   createWalletClient,
@@ -19,32 +19,32 @@ const Debug = () => {
   const [donate, setDonate] = useState<any>("");
   const [transactionHash, setTransactionHash] = useState<any>("");
   const { address: account } = useAccount();
+  const [publicClient, setPublicClient] = useState<any>(null);
+  const [walletClient, setWalletClient] = useState<any>(null);
   const isEmpty = (obj: any) => {
     return Object.keys(obj).length === 0;
   };
-  const publicClient = createPublicClient({
-    chain: assetchain_testnet,
-    transport: http(),
-  });
 
-  const walletClient = createWalletClient({
-    chain: assetchain_testnet,
-    transport: custom(window.ethereum!),
-  });
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setPublicClient(
+        createPublicClient({
+          chain: assetchain_testnet,
+          transport: http(),
+        })
+      );
 
-  const contract = getContract({
-    address: deployedContracts.assetchain_testnet.address as `0x${string}`,
-    abi: deployedContracts.assetchain_testnet.abi,
-    client: publicClient,
-  });
+      setWalletClient(
+        createWalletClient({
+          chain: assetchain_testnet,
+          transport: custom(window.ethereum!),
+        })
+      );
+    }
+  }, []);
 
-  const ReadContract = async () => {
-    const result = await contract.read.greet();
-    setGreeter(result);
-  };
-  const value = "220";
   const WrteContract = async () => {
-    if (!account) return;
+    if (!account || !publicClient || !walletClient) return;
     const { request } = await publicClient.simulateContract({
       address: deployedContracts.assetchain_testnet.address as `0x${string}`,
       abi: deployedContracts.assetchain_testnet.abi,
@@ -68,30 +68,6 @@ const Debug = () => {
             {deployedContracts.assetchain_testnet.contractName} Contract
           </p>
           <div className="py-8 w-full">
-            {/* Implement the Contract Read Functions Here */}
-            {/* <div className="w-full">
-              <div className="bg-white rounded-3xl shadow-md shadow-secondary border border-base-300 flex flex-col mt-10 relative">
-                <div className="h-[5rem] w-[5.5rem] bg-[#DAE8FF] absolute self-start rounded-[22px] -top-[38px] -left-[1px] -z-10 py-[0.65rem] shadow-lg shadow-base-300">
-                  <div className="flex items-center justify-center space-x-2">
-                    <p className="my-0 text-sm">Read</p>
-                  </div>
-                </div>
-                <div className="p-5 w-96">
-                  <div className="flex flex-col gap-3 py-5 first:pt-0 last:pb-1">
-                    <p className="my-0 break-words font-extrabold">greet</p>
-                    <h5>{greeter}</h5>
-                    <button
-                      onClick={ReadContract}
-                      className="bottom-2 right-2 bg-blue-500 text-white py-2 px-4 rounded disabled:cursor-not-allowed disabled:bg-slate-200"
-                      disabled={disableButton}
-                    >
-                      Read 📡
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div> */}
-            {/* Implement the Contract Write Functions Here */}
             <div className="w-full pt-8">
               <div className="bg-white rounded-3xl shadow-md shadow-secondary border border-base-300 flex flex-col mt-10 relative">
                 <div className="h-[5rem] w-[5.5rem] bg-[#DAE8FF] absolute self-start rounded-[22px] -top-[38px] -left-[1px] -z-10 py-[0.65rem] shadow-lg shadow-base-300">
@@ -130,10 +106,6 @@ const Debug = () => {
               </div>
             </div>
           </div>
-          {/* <div>
-            <button onClick={ReadContract}>Read Contract</button>
-            {greeter}
-          </div> */}
         </div>
       )}
     </div>
